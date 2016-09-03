@@ -1,0 +1,23 @@
+{
+	"name": "ecx-scene2d",
+	"license": "MIT",
+	"tags": [
+		"scene",
+		"transform",
+		"ecs",
+		"ecx",
+		"cross"
+	],
+	"classPath": "src",
+	"description": "Scene management for ECX",
+	"contributors": [
+		"eliasku"
+	],
+	"releasenote": "initial",
+	"version": "0.1.0",
+	"url": "https://github.com/eliasku/ecx-scene2d",
+	"dependencies": {
+		"hotmem": "",
+		"ecx": ""
+	}
+}
