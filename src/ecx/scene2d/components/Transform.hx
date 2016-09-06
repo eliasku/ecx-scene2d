@@ -1,5 +1,6 @@
 package ecx.scene2d.components;
 
+import ecx.scene2d.data.Matrix;
 import hotmem.F32Array;
 import hotmem.F32;
 import ecx.types.EntityVector;
@@ -41,7 +42,7 @@ class Transform extends Service implements IComponent {
 		rebuildLocalMatrix(entity);
 	}
 
-	inline public function getRotation(entity:Entity, rotationDegrees:F32) {
+	inline public function getRotation(entity:Entity):F32 {
 		return _rotation[entity.id];
 	}
 
@@ -69,6 +70,49 @@ class Transform extends Service implements IComponent {
 		_b[entity.id] = sin * scaleX;
 		_c[entity.id] = -sin * scaleY;
 		_d[entity.id] = cos * scaleY;
+	}
+
+	public function setLocalMatrix(entity:Entity, matrix:Matrix) {
+		_a[entity.id] = matrix.a;
+		_b[entity.id] = matrix.b;
+		_c[entity.id] = matrix.c;
+		_d[entity.id] = matrix.d;
+		_x[entity.id] = matrix.tx;
+		_y[entity.id] = matrix.ty;
+		markDirty(entity);
+	}
+
+	public function getLocalMatrix(entity:Entity, outMatrix:Matrix) {
+		outMatrix.a = _a[entity.id];
+		outMatrix.b = _b[entity.id];
+		outMatrix.c = _c[entity.id];
+		outMatrix.d = _d[entity.id];
+		outMatrix.tx = _x[entity.id];
+		outMatrix.ty = _y[entity.id];
+	}
+
+	public function concatLocalMatrixTo(entity:Entity, outRightMatrix:Matrix) {
+		var a = _a[entity.id];
+		var b = _b[entity.id];
+		var c = _c[entity.id];
+		var d = _d[entity.id];
+		var x = _x[entity.id];
+		var y = _y[entity.id];
+
+		var ra = outRightMatrix.a;
+		var rb = outRightMatrix.b;
+		var rc = outRightMatrix.c;
+		var rd = outRightMatrix.d;
+		var rx = outRightMatrix.tx;
+		var ry = outRightMatrix.ty;
+
+		outRightMatrix.a = a * ra + c * rb;
+		outRightMatrix.b = b * ra + d * rb;
+		outRightMatrix.c = a * rc + c * rd;
+		outRightMatrix.d = b * rc + d * rd;
+
+		outRightMatrix.tx = a * rx + c * ry + x;
+		outRightMatrix.ty = b * rx + d * ry + y;
 	}
 
 	/** Component Storage **/

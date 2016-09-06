@@ -4,7 +4,7 @@ import ecx.Family;
 import ecx.System;
 import ecx.Wire;
 import ecx.scene2d.components.Transform;
-import ecx.utility.systems.TimeSystem;
+import ecx.common.systems.TimeSystem;
 
 class MotionSystem extends System {
 

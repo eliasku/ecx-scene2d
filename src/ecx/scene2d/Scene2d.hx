@@ -1,6 +1,5 @@
 package ecx.scene2d;
 
-import ecx.scene2d.systems.Scene;
 import ecx.scene2d.systems.ColorSystem;
 import ecx.scene2d.systems.TransformSystem;
 import ecx.scene2d.components.Node;
@@ -16,7 +15,7 @@ class Scene2d extends WorldConfig {
 		super();
 
 		// Services
-		add(new Scene());
+		//add(new Scene());
 
 		// Systems
 		add(new TransformSystem(), PRIORITY_INVALIDATE);

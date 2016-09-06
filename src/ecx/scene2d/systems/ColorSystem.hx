@@ -1,9 +1,9 @@
 package ecx.scene2d.systems;
 
-import ecx.scene2d.components.Argb32;
-import hotmem.U8Array;
-import ecx.scene2d.components.Node;
 import ecx.scene2d.components.Color;
+import ecx.scene2d.components.Node;
+import ecx.scene2d.data.Argb32;
+import hotmem.U8Array;
 
 class ColorSystem extends System {
 
@@ -12,21 +12,23 @@ class ColorSystem extends System {
 	var _color:Wire<Color>;
 	var _node:Wire<Node>;
 
-	public function new() {
+	public function new() {}
+
+	override function initialize() {
 		_clamp255 = new U8Array(511);
 		var clamp = _clamp255;
-		for(i in 0...256) {
+		for (i in 0...256) {
 			clamp[i] = i;
 		}
-		for(i in 256...511) {
+		for (i in 256...511) {
 			clamp[i] = 255;
 		}
 	}
 
 	@:access(ecx.scene2d.components)
 	override function update() {
-		for(entity in _color._dirtyVector) {
-			if(_color.isDirty(entity) && world.isActive(entity)) {
+		for (entity in _color._dirtyVector) {
+			if (_color.isDirty(entity) && world.isActive(entity)) {
 				var topDirty = findTopDirty(entity);
 				var parentTransform = findParentTransform(topDirty);
 				invalidate(topDirty, parentTransform);
@@ -36,13 +38,13 @@ class ColorSystem extends System {
 	}
 
 	function findTopDirty(entity:Entity):Entity {
-		if(!_node.has(entity)) {
+		if (!_node.has(entity)) {
 			return entity;
 		}
 		var topDirty = entity;
 		var current = _node.parent(entity);
-		while(current.isValid) {
-			if(_color.has(current) && _color.isDirty(current)) {
+		while (current.isValid) {
+			if (_color.has(current) && _color.isDirty(current)) {
 				topDirty = current;
 			}
 			current = _node.parent(current);
@@ -51,13 +53,13 @@ class ColorSystem extends System {
 	}
 
 	function findParentTransform(entity:Entity):Entity {
-		if(!_node.has(entity)) {
+		if (!_node.has(entity)) {
 			return Entity.INVALID;
 		}
 
 		var current = _node.parent(entity);
-		while(current.isValid) {
-			if(_color.has(current)) {
+		while (current.isValid) {
+			if (_color.has(current)) {
 				return current;
 			}
 			current = _node.parent(current);
@@ -68,15 +70,15 @@ class ColorSystem extends System {
 
 	@:access(ecx.scene2d.components)
 	function invalidate(entity:Entity, parent:Entity) {
-		if(_color.has(entity)) {
-			if(parent.isValid) {
+		if (_color.has(entity)) {
+			if (parent.isValid) {
 				var leftMult = _color.getMultiplier32(entity);
 				var rightMult = _color.getWorldMultiplier32(parent);
 				var rr = rightMult.r;
 				var rg = rightMult.g;
 				var rb = rightMult.b;
 
-				if(leftMult == Argb32.ONE) {
+				if (leftMult == Argb32.ONE) {
 					_color._worldMultiplier[entity.id] = rightMult;
 				}
 				else {
@@ -96,7 +98,7 @@ class ColorSystem extends System {
 
 				var leftOffset = _color.getOffset32(entity);
 				var rightOffset = _color.getWorldOffset32(parent);
-				if(leftOffset == 0) {
+				if (leftOffset == 0) {
 					_color._worldOffset[entity.id] = rightOffset;
 				}
 				else {
@@ -124,9 +126,9 @@ class ColorSystem extends System {
 			parent = entity;
 		}
 
-		if(_node.has(entity)) {
+		if (_node.has(entity)) {
 			var child = _node.firstChild(entity);
-			while(child.isValid) {
+			while (child.isValid) {
 				invalidate(child, parent);
 				child = _node.after(child);
 			}

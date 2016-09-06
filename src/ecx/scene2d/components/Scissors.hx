@@ -1,7 +1,7 @@
 package ecx.scene2d.components;
 
-import hotmem.F32;
 import ecx.ds.CBitArray;
+import hotmem.F32;
 import hotmem.F32Array;
 
 class Scissors extends Service implements IComponent {
@@ -96,7 +96,6 @@ class Scissors extends Service implements IComponent {
 		return true;
 	}
 }
-
 
 class ScissorsRect {
 	public var x:F32 = 0;

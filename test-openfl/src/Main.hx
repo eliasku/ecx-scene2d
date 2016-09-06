@@ -1,7 +1,7 @@
 package ;
 
-import ecx.utility.EcxUtility;
-import ecx.utility.systems.SystemRunner;
+import ecx.common.EcxUtility;
+import ecx.common.systems.SystemRunner;
 import flash.events.Event;
 import ecx.World;
 import flash.Lib;

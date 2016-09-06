@@ -1,8 +1,8 @@
 package ecx.scene2d.components;
 
-import ecx.types.EntityVector;
-import ecx.scene2d.components.Argb32;
 import ecx.ds.CBitArray;
+import ecx.scene2d.data.Argb32;
+import ecx.types.EntityVector;
 import hotmem.I32Array;
 
 class Color extends Service implements IComponent {
@@ -20,12 +20,12 @@ class Color extends Service implements IComponent {
 	}
 
 	inline public function setTransform(entity, rm:Float = 1, gm:Float = 1, bm:Float = 1, am:Float = 1,
-							   ro:Float = 0, go:Float = 0, bo:Float = 0) {
+										ro:Float = 0, go:Float = 0, bo:Float = 0) {
 		setColor32(entity, Argb32.makeFloats(rm, gm, bm, am), Argb32.makeBytesRGB(Std.int(ro), Std.int(go), Std.int(bo)));
 	}
 
 	public function setColor32(entity:Entity, multiplier:Argb32, offset:Argb32) {
-		if(multiplier != _localMultiplier[entity.id] || offset != _localOffset[entity.id]) {
+		if (multiplier != _localMultiplier[entity.id] || offset != _localOffset[entity.id]) {
 			_localMultiplier[entity.id] = multiplier;
 			_localOffset[entity.id] = offset;
 			markDirty(entity);
@@ -39,7 +39,7 @@ class Color extends Service implements IComponent {
 
 	@:keep
 	public function setOffset32(entity:Entity, offset:Argb32) {
-		if(offset != _localOffset[entity.id]) {
+		if (offset != _localOffset[entity.id]) {
 			_localOffset[entity.id] = offset;
 			markDirty(entity);
 		}
@@ -52,7 +52,7 @@ class Color extends Service implements IComponent {
 
 	@:keep
 	inline public function setMultiplier32(entity:Entity, multiplier:Argb32) {
-		if(multiplier != _localMultiplier[entity.id]) {
+		if (multiplier != _localMultiplier[entity.id]) {
 			_localMultiplier[entity.id] = multiplier;
 			markDirty(entity);
 		}
@@ -62,7 +62,7 @@ class Color extends Service implements IComponent {
 	public function setAlpha(entity:Entity, alpha:Float) {
 		var alpha8:Int = Std.int(alpha * 255);
 		var multiplier:Argb32 = _localMultiplier[entity.id];
-		if(multiplier.a != alpha8) {
+		if (multiplier.a != alpha8) {
 			multiplier.a = alpha8;
 			_localMultiplier[entity.id] = multiplier;
 			markDirty(entity);
@@ -91,7 +91,7 @@ class Color extends Service implements IComponent {
 	}
 
 	inline function markDirty(entity:Entity) {
-		if(_dirtyMask.enableIfNot(entity.id)) {
+		if (_dirtyMask.enableIfNot(entity.id)) {
 			_dirtyVector.push(entity);
 		}
 	}

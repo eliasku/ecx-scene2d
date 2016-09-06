@@ -1,4 +1,4 @@
-package ecx.scene2d.components;
+package ecx.scene2d.data;
 
 import hotmem.F32;
 

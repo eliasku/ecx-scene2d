@@ -1,7 +1,7 @@
 package ;
 
-import ecx.utility.systems.SystemRunner;
-import ecx.utility.systems.FpsMeter;
+import ecx.common.systems.SystemRunner;
+import ecx.common.systems.FpsMeter;
 import flash.text.TextFieldAutoSize;
 import flash.Lib;
 import flash.text.TextField;

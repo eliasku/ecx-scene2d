@@ -1,7 +1,7 @@
 package ;
 
 import ecx.types.EntityVector;
-import ecx.utility.systems.TimeSystem;
+import ecx.common.systems.TimeSystem;
 import ecx.scene2d.systems.Scene;
 import ecx.Entity;
 import ecx.scene2d.components.Node;
