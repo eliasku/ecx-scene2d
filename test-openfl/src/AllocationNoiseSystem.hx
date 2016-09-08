@@ -21,7 +21,7 @@ class AllocationNoiseSystem extends System {
 	}
 	override function update() {
 		for(i in 0..._temp.length) {
-			world.delete(_temp.get(i));
+			world.destroy(_temp.get(i));
 		}
 
 		_temp.reset();

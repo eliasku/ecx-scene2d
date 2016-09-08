@@ -1,5 +1,6 @@
 package ecx.scene2d;
 
+import ecx.common.EcxCommon;
 import ecx.scene2d.systems.ColorSystem;
 import ecx.scene2d.systems.TransformSystem;
 import ecx.scene2d.components.Node;
@@ -13,6 +14,8 @@ class Scene2d extends WorldConfig {
 	public function new() {
 
 		super();
+
+		include(new EcxCommon());
 
 		// Services
 		//add(new Scene());

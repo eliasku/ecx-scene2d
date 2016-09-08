@@ -1,11 +1,9 @@
 package ;
 
-import ecx.common.EcxUtility;
 import ecx.common.systems.SystemRunner;
 import flash.events.Event;
 import ecx.World;
 import flash.Lib;
-import hotmem.HotMemory;
 import ecx.Engine;
 import ecx.scene2d.Scene2d;
 import ecx.WorldConfig;
@@ -18,17 +16,15 @@ class Main extends Sprite {
 	public function new() {
 		super();
 
-		HotMemory.initialize(500);
-
 		var config = new WorldConfig();
 
-		config.require(new EcxUtility());
-		config.require(new Scene2d());
+		config.include(new Scene2d());
 
 		// general
 		config.add(new Stats());
 
 		// systems
+		config.add(new Scene());
 		config.add(new AllocationNoiseSystem(), -1);
 		config.add(new OpenflTest());
 		config.add(new MotionSystem(), 1);

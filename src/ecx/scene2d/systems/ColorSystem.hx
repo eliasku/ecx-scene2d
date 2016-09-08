@@ -42,36 +42,36 @@ class ColorSystem extends System {
 			return entity;
 		}
 		var topDirty = entity;
-		var current = _node.parent(entity);
-		while (current.isValid) {
+		var current = _node.getParent(entity);
+		while (current.notNull()) {
 			if (_color.has(current) && _color.isDirty(current)) {
 				topDirty = current;
 			}
-			current = _node.parent(current);
+			current = _node.getParent(current);
 		}
 		return topDirty;
 	}
 
 	function findParentTransform(entity:Entity):Entity {
 		if (!_node.has(entity)) {
-			return Entity.INVALID;
+			return Entity.NULL;
 		}
 
-		var current = _node.parent(entity);
-		while (current.isValid) {
+		var current = _node.getParent(entity);
+		while (current.notNull()) {
 			if (_color.has(current)) {
 				return current;
 			}
-			current = _node.parent(current);
+			current = _node.getParent(current);
 		}
 
-		return Entity.INVALID;
+		return Entity.NULL;
 	}
 
 	@:access(ecx.scene2d.components)
 	function invalidate(entity:Entity, parent:Entity) {
 		if (_color.has(entity)) {
-			if (parent.isValid) {
+			if (parent.notNull()) {
 				var leftMult = _color.getMultiplier32(entity);
 				var rightMult = _color.getWorldMultiplier32(parent);
 				var rr = rightMult.r;
@@ -127,10 +127,10 @@ class ColorSystem extends System {
 		}
 
 		if (_node.has(entity)) {
-			var child = _node.firstChild(entity);
-			while (child.isValid) {
+			var child = _node.getFirstChild(entity);
+			while (child.notNull()) {
 				invalidate(child, parent);
-				child = _node.after(child);
+				child = _node.getNextSibling(child);
 			}
 		}
 	}

@@ -1,8 +1,6 @@
 package ;
 
-import ecx.types.EntityVector;
 import ecx.common.systems.TimeSystem;
-import ecx.scene2d.systems.Scene;
 import ecx.Entity;
 import ecx.scene2d.components.Node;
 import ecx.scene2d.components.Color;
@@ -80,7 +78,7 @@ class OpenflTest extends System {
 		var fy = - (y - hh) / hh;
 
 		for(i in 0..._layers.length) {
-			_transform.position(_layers[i], fx * 20 * i, fy * 20 * i);
+			_transform.setPosition(_layers[i], fx * 20 * i, fy * 20 * i);
 		}
 	}
 
@@ -90,7 +88,7 @@ class OpenflTest extends System {
 		var layerIndex = Std.int(Math.random() * _layers.length);
 		var radius = 4 + layerIndex * 4;
 		_transform.create(entity);
-		_transform.position(entity, x, y);
+		_transform.setPosition(entity, x, y);
 		_color.create(entity);
 		_node.create(entity);
 		_node.prepend(_layers[layerIndex], entity);

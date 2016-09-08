@@ -10,207 +10,352 @@ class Node extends Service implements IComponent {
 
 	var _name:Wire<Name>;
 
-	inline public function firstChild(entity:Entity):Entity {
-		return world.getEntity(_firstChild[entity.id]);
+	public function new() {}
+
+	/**
+		First child of entity.
+		NULL will be returned if entity has no children,
+		or entity has not Node component
+	**/
+	inline public function getFirstChild(entity:Entity):Entity {
+		return has(entity) ? __getFirstChild(entity) : Entity.NULL;
 	}
 
-	inline public function after(entity:Entity):Entity {
-		return world.getEntity(_sibling[entity.id]);
+	/**
+		Last child of entity.
+		NULL will be returned if entity has no children,
+		or entity has not Node component
+	**/
+	inline public function getLastChild(entity:Entity):Entity {
+		return has(entity) ? __getLastChild(entity) : Entity.NULL;
 	}
 
-	inline public function parent(entity:Entity):Entity {
-		return world.getEntity(_parent[entity.id]);
+	/**
+		Next sibling of the entity.
+		NULL will be returned if entity has no next sibling,
+		or entity has not Node component
+	**/
+	inline public function getNextSibling(entity:Entity):Entity {
+		return has(entity) ? __getNextSibling(entity) : Entity.NULL;
 	}
 
+	/**
+		Previous sibling of the entity.
+		NULL will be returned if entity has no previous sibling,
+		or entity has not Node component
+	**/
+	inline public function getPreviousSibling(entity:Entity):Entity {
+		return has(entity) ? __getPrevSibling(entity) : Entity.NULL;
+	}
+
+	/**
+		Parent of the entity.
+		NULL will be returned if entity has not been added to any entity,
+		or entity has not Node component
+	**/
+	inline public function getParent(entity:Entity):Entity {
+		return has(entity) ? __getParent(entity) : Entity.NULL;
+	}
+
+	/**
+		True if entity has at least one child.
+		False if entity has no children or it has not Node component.
+	**/
 	inline public function hasChildren(entity:Entity):Bool {
-		return firstChild(entity).isValid;
+		return getFirstChild(entity).notNull();
 	}
 
-	inline public function insertAfter(entity:Entity, after:Entity) {
-		_sibling[entity.id] = after.id;
-		_parent[after.id] = _parent[entity.id];
-	}
-
-	public function lastChild(entity:Entity):Entity {
-		var child = firstChild(entity);
-		var last = child;
-		while (child.isValid) {
-			last = child;
-			child = after(child);
+	/**
+		Insert `childAfter` next to the `entity`.
+		Throws exception if `entity` has no parent.
+		`childAfter` will be removed from it's current parent.
+		If `childAfter` has not Node component, it will be added.
+	**/
+	public function insertAfter(entity:Entity, childAfter:Entity) {
+		var par = getParent(entity);
+		if (par.isNull()) throw "entity has no parent";
+		if (!has(childAfter)) {
+			create(childAfter);
 		}
-		return last;
+		removeFromParent(childAfter);
+		var next = __getNextSibling(entity);
+		_nextSibling[entity.id] = childAfter.id;
+		_prevSibling[childAfter.id] = entity.id;
+		if(next.notNull()) {
+			_prevSibling[next.id] = childAfter.id;
+			_nextSibling[childAfter.id] = next.id;
+		}
+		else {
+			_lastChild[par.id] = childAfter.id;
+		}
+		_parent[childAfter.id] = _parent[entity.id];
 	}
 
+	/**
+		Insert `childBefore` back to the `entity`.
+		Throws exception if `entity` has no parent.
+		`childBefore` will be removed from it's current parent.
+		If `childBefore` has not Node component, it will be added.
+	**/
+	public function insertBefore(entity:Entity, childBefore:Entity) {
+		var par = getParent(entity);
+		if (par.isNull()) throw "entity has no parent";
+		if (!has(childBefore)) {
+			create(childBefore);
+		}
+		removeFromParent(childBefore);
+		var prev = __getPrevSibling(entity);
+		_prevSibling[entity.id] = childBefore.id;
+		_nextSibling[childBefore.id] = entity.id;
+		if(prev.notNull()) {
+			_nextSibling[prev.id] = childBefore.id;
+			_prevSibling[childBefore.id] = prev.id;
+		}
+		else {
+			_firstChild[par.id] = childBefore.id;
+		}
+		_parent[childBefore.id] = _parent[entity.id];
+	}
+
+	/**
+		Add `child` to `entity` to the end.
+		If `child` or `entity` have no Node component, it will be created.
+		`child` will be removed from it's current parent.
+	**/
 	public function append(entity:Entity, child:Entity) {
-		var lastChild = lastChild(entity);
-		if (lastChild.isValid) {
-			_sibling[lastChild.id] = child.id;
+		if (!has(entity)) {
+			create(entity);
+		}
+		if (!has(child)) {
+			create(child);
+		}
+
+		if(__getParent(child).notNull()) {
+			removeFromParent(child);
+		}
+
+		var tail = __getLastChild(entity);
+		if (tail.notNull()) {
+			_nextSibling[tail.id] = child.id;
+			_prevSibling[child.id] = tail.id;
+			_lastChild[entity.id] = child.id;
 		}
 		else {
 			_firstChild[entity.id] = child.id;
+			_lastChild[entity.id] = child.id;
 		}
 		_parent[child.id] = entity.id;
 	}
 
+	/**
+		Add `child` to `entity` to the beginning.
+		If `child` or `entity` have no Node component, it will be created.
+		`child` will be removed from it's current parent.
+	**/
 	public function prepend(entity:Entity, child:Entity) {
-		var first = firstChild(entity);
-		if (first.isValid) {
-			_sibling[child.id] = first.id;
+		if (!has(entity)) {
+			create(entity);
+		}
+		if (!has(child)) {
+			create(child);
+		}
+		if(__getParent(child).notNull()) {
+			removeFromParent(child);
+		}
+
+		var head = __getFirstChild(entity);
+		if (head.notNull()) {
+			_nextSibling[child.id] = head.id;
+			_prevSibling[head.id] = child.id;
 			_firstChild[entity.id] = child.id;
 		}
 		else {
 			_firstChild[entity.id] = child.id;
+			_lastChild[entity.id] = child.id;
 		}
 		_parent[child.id] = entity.id;
 	}
 
-	public function countChildren(entity:Entity):Int {
+	/**
+		Number of children of `entity`.
+		Returns 0 if `entity` has no Node component.
+
+		Note: children will be counted in fast-traversing
+		from the first to the last child of `entity`
+	**/
+	public function getChildrenCount(entity:Entity):Int {
 		var num = 0;
-		var child = firstChild(entity);
-		while (child.isValid) {
-			++num;
-			child = after(child);
+		if (has(entity)) {
+			var child = __getFirstChild(entity);
+			while (child.notNull()) {
+				++num;
+				child = __getNextSibling(child);
+			}
 		}
 		return num;
 	}
 
+	/**
+		Search child with `name` in `entity`.
+		Returns NULL if `entity` has no Node component.
+	**/
 	public function findChild(entity:Entity, name:String):Entity {
-		var child = firstChild(entity);
-		while (child.isValid) {
-			if (_name.get(child) == name) {
-				return child;
-			}
-			child = after(child);
-		}
-		return Entity.INVALID;
-	}
-
-	inline public function nextFirst(current:Entity):Entity {
-		var next:Entity = firstChild(current);
-		if (next.isInvalid) {
-			next = after(current);
-			if (next.isInvalid) {
-				next = parent(current);
-			}
-		}
-		return next;
-	}
-
-	inline public function nextReturn(current:Entity):Entity {
-		var next:Entity = after(current);
-		if (next.isInvalid) {
-			next = parent(current);
-		}
-		return next;
-	}
-
-	public function setVisible(entity:Entity, visible:Bool) {
-		if (visible) {
-			_flags[entity.id] |= NodeFlags.VISIBLE;
-		}
-		else {
-			_flags[entity.id] &= ~(NodeFlags.VISIBLE);
-		}
-	}
-
-	inline public function isVisible(entity:Entity):Bool {
-		return (_flags[entity.id] & NodeFlags.VISIBLE) != 0;
-	}
-
-	inline public function isTouchable(entity:Entity):Bool {
-		return (_flags[entity.id] & NodeFlags.TOUCHABLE) != 0;
-	}
-
-	public function setTouchable(entity:Entity, touchable:Bool) {
-		if (touchable) {
-			_flags[entity.id] |= NodeFlags.TOUCHABLE;
-		}
-		else {
-			_flags[entity.id] &= ~(NodeFlags.TOUCHABLE);
-		}
-	}
-
-	public function deleteChildren(entity:Entity) {
-		var child = firstChild(entity);
-		while (child.isValid) {
-			var temp = child;
-			child = after(child);
-			deleteChildren(temp);
-			world.delete(temp);
-		}
-	}
-
-	public function removeFromParent(entity:Entity) {
-		var parent:Entity = parent(entity);
-		_parent[entity.id] = Entity.INVALID.id;
-		var child = firstChild(parent);
-		if(child == entity) {
-			_firstChild[parent.id] = _sibling[child.id];
-		}
-		else {
-			while(child.isValid) {
-				if(after(child) == entity) {
-					_sibling[child.id] = _sibling[entity.id];
-					break;
+		if (has(entity)) {
+			var child = __getFirstChild(entity);
+			while (child.notNull()) {
+				if (_name.get(child) == name) {
+					return child;
 				}
-				child = after(child);
+				child = __getNextSibling(child);
 			}
 		}
+		return Entity.NULL;
 	}
 
-	public function removeChildren(entity:Entity) {
-		var child = firstChild(entity);
-		_firstChild[entity.id] = Entity.INVALID.id;
-		while(child.isValid) {
+	/**
+		Check if `entity` is visible.
+		Returns `false` if `entity` has no Node component.
+	**/
+	inline public function isVisible(entity:Entity):Bool {
+		return has(entity) && __getFlag(entity, NodeFlags.VISIBLE);
+	}
+
+	/**
+		Check if `entity` is touchable.
+		Returns `false` if `entity` has no Node component.
+	**/
+	inline public function isTouchable(entity:Entity):Bool {
+		return has(entity) && __getFlag(entity, NodeFlags.TOUCHABLE);
+	}
+
+	/**
+		Set `visible` flag to the `entity`.
+		If `entity` has no Node, it will be created.
+	**/
+	public function setVisible(entity:Entity, visible:Bool) {
+		if (!has(entity)) {
+			create(entity);
+		}
+		__setFlag(entity, NodeFlags.VISIBLE, visible);
+	}
+
+	/**
+		Set `touchable` flag to the `entity`.
+		If `entity` has no Node, it will be created.
+	**/
+	public function setTouchable(entity:Entity, touchable:Bool) {
+		if (!has(entity)) {
+			create(entity);
+		}
+		__setFlag(entity, NodeFlags.TOUCHABLE, touchable);
+	}
+
+	/**
+		Delete all children and sub-children of `entity`
+		if `entity` has Node component.
+	**/
+	public function destroyChildren(entity:Entity) {
+		if(!has(entity)) {
+			return;
+		}
+		var child = __getFirstChild(entity);
+		while (child.notNull()) {
 			var temp = child;
-			child = after(child);
-			_parent[temp.id] = Entity.INVALID.id;
-			_sibling[temp.id] = Entity.INVALID.id;
+			child = __getNextSibling(child);
+			destroyChildren(temp);
+			_mask.disable(temp.id);
+			_parent[temp.id] = Entity.ID_NULL;
+			world.destroy(temp);
+		}
+		_firstChild[entity.id] = Entity.ID_NULL;
+		_lastChild[entity.id] = Entity.ID_NULL;
+	}
+
+	/**
+		Remove `entity` from it's parent
+		if `entity` has Node component and is a child.
+	**/
+	public function removeFromParent(entity:Entity) {
+		if(!has(entity)) {
+			return;
+		}
+		var parent = __getParent(entity);
+		if(parent.isNull()) {
+			return;
+		}
+
+		_parent[entity.id] = Entity.ID_NULL;
+		var prev = __getPrevSibling(entity);
+		var next = __getNextSibling(entity);
+		if(prev.notNull()) {
+			_nextSibling[prev.id] = next.id;
+		}
+		else {
+			_firstChild[parent.id] = next.id;
+		}
+		if(next.notNull()) {
+			_prevSibling[next.id] = prev.id;
+		}
+		else {
+			_lastChild[parent.id] = prev.id;
 		}
 	}
-//
-//	inline public function next(current:Entity, previous:Entity):Entity {
-//		var next:Entity = parent(previous) == current ? after(current) : firstChild(current);
-//		if(next.isInvalid) {
-//			next = after(current);
-//			if(next.isInvalid) {
-//				next = parent(current);
-//			}
-//		}
-//		return next;
-//	}
 
-	/** Component Storage **/
+	/**
+		Remove all children of `entity`
+		if `entity` has Node component and is a child.
+	**/
+	public function removeChildren(entity:Entity) {
+		if(!has(entity)) {
+			return;
+		}
+		var child = __getFirstChild(entity);
+		while (child.notNull()) {
+			var temp = child;
+			child = __getNextSibling(child);
+			_parent[temp.id] = Entity.ID_NULL;
+			_nextSibling[temp.id] = Entity.ID_NULL;
+			_prevSibling[temp.id] = Entity.ID_NULL;
+		}
+		_firstChild[entity.id] = Entity.ID_NULL;
+		_lastChild[entity.id] = Entity.ID_NULL;
+	}
+
+	// Component Storage
 
 	var _mask:CBitArray;
 	var _parent:I32Array;
-	var _sibling:I32Array;
+	var _nextSibling:I32Array;
+	var _prevSibling:I32Array;
 	var _firstChild:I32Array;
+	var _lastChild:I32Array;
 	var _flags:U8Array;
-
-	public function new() {}
 
 	override function __allocate() {
 		var capacity = world.capacity;
 		_parent = new I32Array(capacity);
-		_sibling = new I32Array(capacity);
+		_nextSibling = new I32Array(capacity);
+		_prevSibling = new I32Array(capacity);
 		_firstChild = new I32Array(capacity);
+		_lastChild = new I32Array(capacity);
 		_flags = new U8Array(capacity);
 		_mask = new CBitArray(capacity);
 	}
 
 	inline public function create(entity:Entity) {
 		_mask.enable(entity.id);
-		_parent[entity.id] = Entity.INVALID.id;
-		_firstChild[entity.id] = Entity.INVALID.id;
-		_sibling[entity.id] = Entity.INVALID.id;
+		_parent[entity.id] = Entity.ID_NULL;
+		_firstChild[entity.id] = Entity.ID_NULL;
+		_lastChild[entity.id] = Entity.ID_NULL;
+		_nextSibling[entity.id] = Entity.ID_NULL;
+		_prevSibling[entity.id] = Entity.ID_NULL;
 		_flags[entity.id] = NodeFlags.VISIBLE | NodeFlags.TOUCHABLE;
 	}
 
-	inline public function remove(entity:Entity) {
-		_mask.disable(entity.id);
+	inline public function destroy(entity:Entity) {
 		removeFromParent(entity);
-		removeChildren(entity);
+		destroyChildren(entity);
+		_mask.disable(entity.id);
 	}
 
 	inline public function has(entity:Entity):Bool {
@@ -218,23 +363,66 @@ class Node extends Service implements IComponent {
 	}
 
 	inline public function copy(source:Entity, destination:Entity):Void {
-		_mask.enable(destination.id);
-		_parent[destination.id] = Entity.INVALID.id;
-		_firstChild[destination.id] = Entity.INVALID.id;
-		_sibling[destination.id] = Entity.INVALID.id;
-		_flags[destination.id] = _flags[source.id];
-		var child = firstChild(source);
-		var prev = Entity.INVALID;
-		while(child.isValid) {
+		create(destination);
+
+		var child = __getFirstChild(source);
+		var prev = Entity.NULL;
+		while (child.notNull()) {
 			var childCopy = world.clone(child);
-			if(prev.isValid) {
+			if (prev.notNull()) {
 				insertAfter(prev, childCopy);
 			}
 			else {
 				append(destination, childCopy);
 			}
 			prev = childCopy;
-			child = after(child);
+			child = __getNextSibling(child);
+		}
+	}
+
+	public function getObjectSize():Int {
+		return
+			_mask.getObjectSize() +
+			_parent.getObjectSize() +
+			_nextSibling.getObjectSize() +
+			_prevSibling.getObjectSize() +
+			_firstChild.getObjectSize() +
+			_lastChild.getObjectSize() +
+			_flags.getObjectSize();
+	}
+
+	// EXTRA UNSAFE METHODS
+
+	inline public function __getFirstChild(entity:Entity):Entity {
+		return world.getEntity(_firstChild[entity.id]);
+	}
+
+	inline public function __getLastChild(entity:Entity):Entity {
+		return world.getEntity(_lastChild[entity.id]);
+	}
+
+	inline public function __getNextSibling(entity:Entity):Entity {
+		return world.getEntity(_nextSibling[entity.id]);
+	}
+
+	inline public function __getPrevSibling(entity:Entity):Entity {
+		return world.getEntity(_prevSibling[entity.id]);
+	}
+
+	inline public function __getParent(entity:Entity):Entity {
+		return world.getEntity(_parent[entity.id]);
+	}
+
+	inline public function __getFlag(entity:Entity, flag:Int):Bool {
+		return (_flags[entity.id] & flag) != 0;
+	}
+
+	public function __setFlag(entity:Entity, flag:Int, enabled:Bool) {
+		if (enabled) {
+			_flags[entity.id] |= flag;
+		}
+		else {
+			_flags[entity.id] &= ~flag;
 		}
 	}
 }

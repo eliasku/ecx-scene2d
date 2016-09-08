@@ -130,7 +130,7 @@ class Color extends Service implements IComponent {
 		markDirty(entity);
 	}
 
-	inline public function remove(entity:Entity) {
+	inline public function destroy(entity:Entity) {
 		_mask.disable(entity.id);
 	}
 
@@ -143,5 +143,16 @@ class Color extends Service implements IComponent {
 		_localMultiplier[destination.id] = _localMultiplier[source.id];
 		_localOffset[destination.id] = _localOffset[source.id];
 		markDirty(destination);
+	}
+
+	public function getObjectSize():Int {
+		return
+			_mask.getObjectSize() +
+			_worldMultiplier.getObjectSize() +
+			_worldOffset.getObjectSize() +
+			_localMultiplier.getObjectSize() +
+			_localOffset.getObjectSize() +
+			_dirtyMask.getObjectSize() +
+			_dirtyVector.getObjectSize();
 	}
 }

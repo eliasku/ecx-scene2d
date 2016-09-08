@@ -26,7 +26,7 @@ class MotionSystem extends System {
 			motion.vy += dt * motion.ay;
 			x += dt * motion.vx;
 			y += dt * motion.vy;
-			_transform.position(entity, x, y);
+			_transform.setPosition(entity, x, y);
 		}
 	}
 }

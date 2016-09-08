@@ -8,6 +8,10 @@ import ecx.ds.CBitArray;
 
 class Transform extends Service implements IComponent {
 
+	var _node:Wire<Node>;
+	var _ancestors:Array<Entity> = [];
+	var _tempTransformMatrix:Matrix = new Matrix();
+
 	inline static var PI:Float = 3.14159265359;
 	inline static var TO_RAD:Float = PI / 180.0;
 
@@ -29,13 +33,13 @@ class Transform extends Service implements IComponent {
 		return _y[entity.id];
 	}
 
-	inline public function position(entity:Entity, x:F32, y:F32) {
+	inline public function setPosition(entity:Entity, x:F32, y:F32) {
 		_x[entity.id] = x;
 		_y[entity.id] = y;
 		markDirty(entity);
 	}
 
-	inline public function scale(entity:Entity, scaleX:F32, scaleY:F32) {
+	inline public function setScale(entity:Entity, scaleX:F32, scaleY:F32) {
 		_scaleX[entity.id] = scaleX;
 		_scaleY[entity.id] = scaleY;
 		markDirty(entity);
@@ -192,7 +196,7 @@ class Transform extends Service implements IComponent {
 		markDirty(entity);
 	}
 
-	inline public function remove(entity:Entity) {
+	inline public function destroy(entity:Entity) {
 		_mask.disable(entity.id);
 		_dirtyMask.disable(entity.id);
 	}
@@ -218,9 +222,133 @@ class Transform extends Service implements IComponent {
 		markDirty(destination);
 	}
 
+	public function getObjectSize():Int {
+		return
+			_mask.getObjectSize() +
+			_wa.getObjectSize() +
+			_wb.getObjectSize() +
+			_wc.getObjectSize() +
+			_wd.getObjectSize() +
+			_wx.getObjectSize() +
+			_wy.getObjectSize() +
+			_a.getObjectSize() +
+			_b.getObjectSize() +
+			_c.getObjectSize() +
+			_d.getObjectSize() +
+			_x.getObjectSize() +
+			_y.getObjectSize() +
+			_rotation.getObjectSize() +
+			_scaleX.getObjectSize() +
+			_scaleY.getObjectSize() +
+			_dirtyMask.getObjectSize() +
+			_dirtyVector.getObjectSize();
+	}
+
 	inline function markDirty(entity:Entity) {
 		if(_dirtyMask.enableIfNot(entity.id)) {
 			_dirtyVector.push(entity);
 		}
+	}
+
+	/**
+		NULL `targetSpace` represents as `entity` root space
+	**/
+	public function getTransformationMatrix(entity:Entity, targetSpace:Entity, outMatrix:Matrix = null):Matrix {
+		if (outMatrix == null) {
+			outMatrix = new Matrix();
+		}
+
+		if (targetSpace == entity || !_node.has(entity)) {
+			outMatrix.identity();
+			return outMatrix;
+		}
+
+		var parent = _node.getParent(entity);
+		if (targetSpace == parent) {
+			if (has(entity)) {
+				getLocalMatrix(entity, outMatrix);
+			}
+			else {
+				outMatrix.identity();
+			}
+			return outMatrix;
+		}
+
+		var current = Entity.NULL;
+
+		if (targetSpace.isNull()) {
+			outMatrix.identity();
+			current = entity;
+			while (current.notNull()) {
+				if (has(current)) {
+					concatLocalMatrixTo(current, outMatrix);
+				}
+				current = _node.getParent(current);
+			}
+			return outMatrix;
+		}
+
+		// optimization
+		if (_node.getParent(targetSpace) == entity) {
+			if (has(targetSpace)) {
+				getLocalMatrix(targetSpace, outMatrix);
+				outMatrix.invert();
+				return outMatrix;
+			}
+			outMatrix.identity();
+			return outMatrix;
+		}
+
+		// 1. find a common parent of this and the trackTarget space
+		var index = 0;
+		var commonParent = Entity.NULL;
+		current = entity;
+		while (current.notNull()) {
+			_ancestors[index++] = current;
+			current = _node.getParent(current);
+		}
+
+		// TODO: optimize with pre-depth solution
+		current = targetSpace;
+		while (current.notNull() && _ancestors.indexOf(current) < 0) {
+			current = _node.getParent(current);
+		}
+
+		if (current.notNull()) {
+			commonParent = current;
+		}
+		else {
+			throw 'Object not connected to targetSpace';
+		}
+
+		// 2. move up from this to common parent
+		current = entity;
+		outMatrix.identity();
+		while (current != commonParent) {
+			if (has(current)) {
+				concatLocalMatrixTo(current, outMatrix);
+			}
+			current = _node.getParent(current);
+		}
+
+		if (commonParent == targetSpace) {
+			return outMatrix;
+		}
+
+		// 3. now move up from targetSpace until we reach the common parent
+		var matrix = _tempTransformMatrix;
+		matrix.identity();
+		current = targetSpace;
+		while (current != commonParent) {
+			if (has(current)) {
+				concatLocalMatrixTo(current, matrix);
+			}
+			current = _node.getParent(current);
+		}
+
+		// 4. now combine two matrices
+		matrix.invert();
+		Matrix.multiply(outMatrix, matrix, outMatrix);
+		return outMatrix;
 	}
 }

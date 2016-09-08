@@ -13,7 +13,7 @@ class TraverseSystem extends System {
 	var _node:Wire<Node>;
 	var _stats:Wire<Stats>;
 
-	var _root:Entity = Entity.INVALID;
+	var _root:Entity;
 	var _mode:Int = 0;
 
 	var _nodes:Int;
@@ -30,7 +30,7 @@ class TraverseSystem extends System {
 	}
 
 	override function update() {
-		if(_root.isInvalid) {
+		if(!_root) {
 			createScene();
 		}
 
@@ -52,10 +52,10 @@ class TraverseSystem extends System {
 		// DO NODE ENTER PROCESSING
 		++_nodes;
 
-		var child = _node.firstChild(entity);
-		while(child.isValid) {
+		var child = _node.getFirstChild(entity);
+		while(child) {
 			traverseNaive(child);
-			child = _node.after(child);
+			child = _node.getNextSibling(child);
 		}
 
 		// DO NODE EXIT PROCESSING
@@ -67,14 +67,14 @@ class TraverseSystem extends System {
 		var next = _root;
 		var forward = true;
 
-		while(current.isValid) {
+		while(current) {
 			if(current == next) {
 
 				// DO NODE ENTER PROCESSING
 				++_nodes;
 
-				next = _node.firstChild(current);
-				if(next.isValid) {
+				next = _node.getFirstChild(current);
+				if(next) {
 					current = next;
 				}
 			}
@@ -83,8 +83,8 @@ class TraverseSystem extends System {
 				// DO NODE EXIT PROCESSING
 				++_post;
 
-				next = _node.after(current);
-				current = next.isValid ? next : _node.parent(current);
+				next = _node.getNextSibling(current);
+				current = next ? next : _node.getParent(current);
 			}
 
 //			if(backward) {

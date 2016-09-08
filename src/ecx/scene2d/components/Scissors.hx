@@ -39,7 +39,7 @@ class Scissors extends Service implements IComponent {
 
 	inline public function set(entity:Entity, mock:Bool) {}
 
-	inline public function remove(entity:Entity) {
+	inline public function destroy(entity:Entity) {
 		_mask.disable(entity.id);
 	}
 

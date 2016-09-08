@@ -50,7 +50,16 @@ class Stats extends System {
 			var timingMax = '${round2d(profile.updateTimeMax * 1000)} + ${round2d(profile.invalidateTimeMax * 1000)} ms';
 			var entitiesInfo = 'changed: ${profile.changed}; removed: ${profile.removed}';
 			lines.push('${profile.name} : $timing | max: $timingMax | $entitiesInfo');
+		}
 
+		lines.push("");
+
+		for(component in world.components) {
+			if(component != null) {
+				var name = Type.getClassName(Type.getClass(component));
+				var size = component.getObjectSize();
+				lines.push('$name : $size bytes');
+			}
 		}
 
 		_tf.text = lines.join("\n");

@@ -1,3 +1,4 @@
+import hxmake.test.TestTask;
 import hxmake.haxelib.HaxelibExt;
 import hxmake.idea.IdeaPlugin;
 import hxmake.haxelib.HaxelibPlugin;
@@ -33,10 +34,10 @@ class EcxScene2dMake extends hxmake.Module {
 			ext.pack.includes = ["src", "haxelib.json", "README.md"];
 		});
 
-//		var tt = new TestTask();
-//		tt.debug = true;
-//		tt.targets = ["neko", "swf", "node", "js", "cpp", "java", "cs"];
-//		tt.libraries = ["ecx", "ecx-scene2d", "hotmem"];
-//		task("test", tt);
+		var tt = new TestTask();
+		tt.debug = true;
+		tt.targets = ["swf", "node", "js", "cpp", "java", "cs"];
+		tt.libraries = ["ecx", "ecx-common", "ecx-scene2d", "hotmem"];
+		task("test", tt);
 	}
 }

@@ -1,7 +1,6 @@
 package ;
 
 import ecx.scene2d.components.Node;
-import ecx.scene2d.systems.Scene;
 import flash.display.Sprite;
 import flash.geom.Matrix;
 import flash.geom.ColorTransform;
@@ -43,7 +42,7 @@ class DisplaySystem extends System {
 
 		var index:Int = 0;
 
-		while(current.isValid) {
+		while(current.notNull()) {
 			if(current == next) {
 
 				// DO NODE ENTER PROCESSING
@@ -56,8 +55,8 @@ class DisplaySystem extends System {
 					++index;
 				}
 
-				next = _node.firstChild(current);
-				if(next.isValid) {
+				next = _node.getFirstChild(current);
+				if(next.notNull()) {
 					current = next;
 				}
 			}
@@ -65,8 +64,8 @@ class DisplaySystem extends System {
 
 				// DO NODE EXIT PROCESSING
 
-				next = _node.after(current);
-				current = next.isValid ? next : _node.parent(current);
+				next = _node.getNextSibling(current);
+				current = next.notNull() ? next : _node.getParent(current);
 			}
 		}
 	}
