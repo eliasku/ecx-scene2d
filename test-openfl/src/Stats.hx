@@ -54,7 +54,7 @@ class Stats extends System {
 
 		lines.push("");
 
-		for(component in @:privateAccess world._components) {
+		for(component in world.components()) {
 			if(component != null) {
 				var name = Type.getClassName(Type.getClass(component));
 				var size = component.getObjectSize();
