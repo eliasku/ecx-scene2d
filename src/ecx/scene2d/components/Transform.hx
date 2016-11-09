@@ -64,6 +64,46 @@ class Transform extends Service implements IComponent {
 		return _dirtyMask.get(entity.id);
 	}
 
+	inline public function getWorldA(entity:Entity):F32 {
+		return _wa[entity.id];
+	}
+
+	inline public function getWorldB(entity:Entity):F32 {
+		return _wb[entity.id];
+	}
+
+	inline public function getWorldC(entity:Entity):F32 {
+		return _wc[entity.id];
+	}
+
+	inline public function getWorldD(entity:Entity):F32 {
+		return _wd[entity.id];
+	}
+
+	inline public function getWorldX(entity:Entity):F32 {
+		return _wx[entity.id];
+	}
+
+	inline public function getWorldY(entity:Entity):F32 {
+		return _wy[entity.id];
+	}
+
+	inline public function getLocalA(entity:Entity):F32 {
+		return _a[entity.id];
+	}
+
+	inline public function getLocalB(entity:Entity):F32 {
+		return _b[entity.id];
+	}
+
+	inline public function getLocalC(entity:Entity):F32 {
+		return _c[entity.id];
+	}
+
+	inline public function getLocalD(entity:Entity):F32 {
+		return _d[entity.id];
+	}
+
 	function rebuildLocalMatrix(entity:Entity) {
 		var rads = _rotation[entity.id] * TO_RAD;
 		var sin = Math.sin(rads);
@@ -117,6 +157,15 @@ class Transform extends Service implements IComponent {
 
 		outRightMatrix.tx = a * rx + c * ry + x;
 		outRightMatrix.ty = b * rx + d * ry + y;
+	}
+
+	public function writeWorldMatrix(entity:Entity, outWorldMatrix:Matrix) {
+		outWorldMatrix.a = _wa[entity.id];
+		outWorldMatrix.b = _wb[entity.id];
+		outWorldMatrix.c = _wc[entity.id];
+		outWorldMatrix.d = _wd[entity.id];
+		outWorldMatrix.tx = _wx[entity.id];
+		outWorldMatrix.ty = _wy[entity.id];
 	}
 
 	/** Component Storage **/

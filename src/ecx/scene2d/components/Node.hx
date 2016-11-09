@@ -284,7 +284,6 @@ class Node extends Service implements IComponent {
 			return;
 		}
 
-		_parent[entity.id] = Entity.ID_NULL;
 		var prev = __getPrevSibling(entity);
 		var next = __getNextSibling(entity);
 		if(prev.notNull()) {
@@ -299,6 +298,10 @@ class Node extends Service implements IComponent {
 		else {
 			_lastChild[parent.id] = prev.id;
 		}
+
+		_parent[entity.id] = Entity.ID_NULL;
+		_nextSibling[entity.id] = Entity.ID_NULL;
+		_prevSibling[entity.id] = Entity.ID_NULL;
 	}
 
 	/**
@@ -319,6 +322,40 @@ class Node extends Service implements IComponent {
 		}
 		_firstChild[entity.id] = Entity.ID_NULL;
 		_lastChild[entity.id] = Entity.ID_NULL;
+	}
+
+	/**
+		Returns true if entity is descendant of ancestor.
+	**/
+	public function isDescendant(entity:Entity, ancestor:Entity) {
+		if(!has(entity) || !has(ancestor)) {
+			return false;
+		}
+
+		while(entity.notNull()) {
+			entity = __getParent(entity);
+			if(entity == ancestor) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+		Returns readable path of entity, from root to entity
+		Used mostly for Debugging.
+		"_" symbol is used for unnamed nodes.
+	**/
+	public function getPath(entity:Entity):String {
+		var path = [];
+		while (entity.notNull()) {
+			var name = _name.get(entity);
+			path.push(name != null ? name : "_");
+			entity = getParent(entity);
+		}
+		path.reverse();
+		return path.join(".");
 	}
 
 	// Component Storage
