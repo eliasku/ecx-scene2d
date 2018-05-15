@@ -345,17 +345,17 @@ class Node extends Service implements IComponent {
 	/**
 		Returns readable path of entity, from root to entity
 		Used mostly for Debugging.
-		"_" symbol is used for unnamed nodes.
+		Empty string "" is used for unnamed nodes.
 	**/
 	public function getPath(entity:Entity):String {
 		var path = [];
 		while (entity.notNull()) {
 			var name = _name.get(entity);
-			path.push(name != null ? name : "_");
+			path.push(name != null ? name : "");
 			entity = getParent(entity);
 		}
 		path.reverse();
-		return path.join(".");
+		return path.join("/");
 	}
 
 	// Component Storage
@@ -377,6 +377,9 @@ class Node extends Service implements IComponent {
 		_lastChild = new I32Array(capacity);
 		_flags = new U8Array(capacity);
 		_mask = new CBitArray(capacity);
+
+		root = world.create();
+		create(root);
 	}
 
 	inline public function create(entity:Entity) {
